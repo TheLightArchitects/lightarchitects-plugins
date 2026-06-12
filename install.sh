@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Light Architects Plugin — Installer
 #
-# Downloads the la-mcp client binary and wires the lightarchitects plugin
+# Downloads the larc-gateway client binary and wires the lightarchitects plugin
 # into Claude Code. Run once after cloning this repo.
 #
 # Usage:
@@ -19,9 +19,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LA_ROOT="${LA_ROOT:-${HOME}/.lightarchitects}"
 LA_BIN="${LA_ROOT}/bin"
-LA_MCP="${LA_BIN}/la-mcp"
+LARC_GATEWAY="${LA_BIN}/larc-gateway"
 PLUGIN_CACHE="${HOME}/.claude/plugins/cache/light-architects"
-RELEASES_URL="https://github.com/TheLightArchitects/la-mcp/releases/latest/download"
+RELEASES_URL="https://github.com/TheLightArchitects/larc-gateway/releases/latest/download"
 DRY_RUN=false
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; BOLD='\033[1m'; NC='\033[0m'
@@ -58,14 +58,14 @@ step "Scaffolding ${LA_ROOT}"
 run "mkdir -p \"${LA_BIN}\""
 ok "bin directory ready"
 
-# ─── 2. Download la-mcp binary ────────────────────────────────────────────────
-step "la-mcp binary"
+# ─── 2. Download larc-gateway binary ────────────────────────────────────────────────
+step "larc-gateway binary"
 
 PLATFORM="$(detect_platform)"
-BINARY_URL="${RELEASES_URL}/la-mcp-${PLATFORM}"
+BINARY_URL="${RELEASES_URL}/larc-gateway-${PLATFORM}"
 
-if [ -f "${LA_MCP}" ] && ! $DRY_RUN; then
-  INSTALLED="$(${LA_MCP} --version 2>/dev/null || echo 'unknown')"
+if [ -f "${LARC_GATEWAY}" ] && ! $DRY_RUN; then
+  INSTALLED="$(${LARC_GATEWAY} --version 2>/dev/null || echo 'unknown')"
   ok "already installed: ${INSTALLED}"
   warn "Re-downloading to ensure latest version..."
 fi
@@ -73,11 +73,11 @@ fi
 ok "Platform: ${PLATFORM}"
 ok "Downloading from: ${BINARY_URL}"
 
-run "curl -fsSL \"${BINARY_URL}\" -o \"${LA_MCP}\""
-run "chmod +x \"${LA_MCP}\""
+run "curl -fsSL \"${BINARY_URL}\" -o \"${LARC_GATEWAY}\""
+run "chmod +x \"${LARC_GATEWAY}\""
 
-if ! $DRY_RUN && [ -f "${LA_MCP}" ]; then
-  ok "la-mcp installed: $(${LA_MCP} --version 2>/dev/null || echo 'ok')"
+if ! $DRY_RUN && [ -f "${LARC_GATEWAY}" ]; then
+  ok "larc-gateway installed: $(${LARC_GATEWAY} --version 2>/dev/null || echo 'ok')"
 fi
 
 # ─── 3. Plugin cache symlink ──────────────────────────────────────────────────
@@ -113,7 +113,7 @@ cat <<SNIPPET
 Add this to ${MCP_CONFIG} under "mcpServers":
 
   "lightarchitects": {
-    "command": "${LA_MCP}",
+    "command": "${LARC_GATEWAY}",
     "env": {
       "LIGHTARCHITECTS_API_KEY": "<your-api-key>",
       "LIGHTARCHITECTS_API_URL": "https://api.lightarchitects.ai"
@@ -136,7 +136,7 @@ step "Done"
 if $DRY_RUN; then
   warn "Dry run complete — no files written."
 else
-  ok "la-mcp binary: ${LA_MCP}"
+  ok "larc-gateway binary: ${LARC_GATEWAY}"
   ok "Plugin cache:  ${PLUGIN_CACHE}"
   echo ""
   echo "Next steps:"

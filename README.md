@@ -50,7 +50,7 @@ Invoke these directly in Claude Code with `/SKILL_NAME`:
 git clone https://github.com/TheLightArchitects/lightarchitects-plugins.git
 cd lightarchitects-plugins
 
-# 2. Run the installer — downloads la-mcp binary and prints MCP config
+# 2. Run the installer — downloads larc-gateway binary and prints MCP config
 bash install.sh
 
 # 3. Add the printed snippet to ~/.claude/mcp.json (with your API key)
@@ -66,7 +66,7 @@ That's it. No Rust toolchain, no building from source.
 {
   "mcpServers": {
     "lightarchitects": {
-      "command": "~/.lightarchitects/bin/la-mcp",
+      "command": "~/.lightarchitects/bin/larc-gateway",
       "env": {
         "LIGHTARCHITECTS_API_KEY": "<your-api-key>",
         "LIGHTARCHITECTS_API_URL": "https://api.lightarchitects.ai"
@@ -76,7 +76,7 @@ That's it. No Rust toolchain, no building from source.
 }
 ```
 
-The `la-mcp` binary is a lightweight MCP client built on [`rmcp`](https://github.com/modelcontextprotocol/rust-sdk) that routes tool calls to the Light Architects API. No private platform code is distributed.
+The `larc-gateway` binary is a lightweight MCP client built on [`rmcp`](https://github.com/modelcontextprotocol/rust-sdk) that routes tool calls to the Light Architects API. No private platform code is distributed.
 
 ## Directory layout
 
@@ -135,7 +135,7 @@ All vars are optional — the gateway starts and skills run without any of them.
 
 ## Related
 
-- [lightarchitects-sdk](https://github.com/TheLightArchitects/lightarchitects-sdk) — Gateway binary source
+- [larc-gateway](https://github.com/TheLightArchitects/larc-gateway) — MCP client binary (built on rmcp)
 - [larc-crates](https://github.com/TheLightArchitects/larc-crates) — Public Rust crates (crypto, API key management)
 
 ## License
