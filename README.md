@@ -96,6 +96,49 @@ plugins/lightarchitects/
 └── references/                  # Skill execution spec + pipelines
 ```
 
+## Environment variables
+
+All vars are optional — the gateway starts and skills run without any of them.
+
+### LLM routing
+
+| Var | Purpose | Default |
+|-----|---------|---------|
+| `LA_LLM` | Backend selector: `claude` \| `ollama` \| `litellm` | `claude` |
+| `LA_MODEL` | Model override for the selected backend | backend default |
+| `LA_MAX_TOKENS` | Token budget cap per call | 8192 |
+| `LA_LITELLM_BASE_URL` | LiteLLM proxy URL | — |
+| `LA_LITELLM_API_KEY` | LiteLLM proxy auth key | — |
+| `LA_LITELLM_MODEL` | Model name sent to LiteLLM | — |
+| `ANTHROPIC_API_KEY` | Claude direct (bypasses proxy) | — |
+| `OLLAMA_HOST` | Ollama server address | `http://localhost:11434` |
+| `OLLAMA_MODEL` | Ollama model name | gateway default |
+| `OLLAMA_API_KEY` | Ollama cloud API key | — |
+
+### Knowledge graph
+
+| Var | Purpose | Default |
+|-----|---------|---------|
+| `SOUL_PATH` | Path to the knowledge graph root | `~/.lightarchitects/helix` |
+| `HELIX_ROOT` | Alternative helix root override | `~/.lightarchitects/helix` |
+| `LA_USER_ID` | User identity for vault isolation | hostname |
+| `SOUL_ENRICH_ASYNC` | Non-blocking enrichment writes (`true`/`false`) | `false` |
+
+### Optional integrations
+
+| Var | Purpose |
+|-----|---------|
+| `PERPLEXITY_API_KEY` | Web search in Analyst/Research skills |
+| `ELEVENLABS_API_KEY` | TTS voice synthesis (Monitor/Foxtrot) |
+| `HF_TOKEN` | Hugging Face model access |
+| `RUNPOD_API_KEY` | RunPod GPU endpoints |
+| `NEO4J_URI` + `NEO4J_USER` + `NEO4J_PASS` | Neo4j graph backend (replaces file-based helix) |
+| `AYIN_PORT` | Observability dashboard port (default `3742`) |
+| `KROKI_URL` | Self-hosted diagram rendering |
+| `LIGHTARCHITECTS_GITHUB_PAT` | GitHub operations in skills |
+| `DISCORD_BOT_TOKEN` | Discord notifications |
+| `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` | Telegram notifications |
+
 ## Related
 
 - [lightarchitects-sdk](https://github.com/TheLightArchitects/lightarchitects-sdk) — Gateway binary source
