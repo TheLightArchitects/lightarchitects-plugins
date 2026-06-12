@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "lightarchitects": {
-      "command": "${HOME}/.lightarchitects/bin/larc-gateway",
+      "command": "${HOME}/.lightarchitects/bin/larc-proxy",
       "env": {
         "LIGHTARCHITECTS_API_KEY": "${LIGHTARCHITECTS_API_KEY}",
         "LIGHTARCHITECTS_API_URL": "https://api.lightarchitects.ai",

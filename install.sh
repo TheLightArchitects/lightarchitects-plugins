@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Light Architects Plugin — Installer
 #
-# Downloads the larc-gateway client binary and wires the lightarchitects plugin
+# Downloads the larc-proxy client binary and wires the lightarchitects plugin
 # into Claude Code. Run once after cloning this repo.
 #
 # Usage:
@@ -19,9 +19,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LA_ROOT="${LA_ROOT:-${HOME}/.lightarchitects}"
 LA_BIN="${LA_ROOT}/bin"
-LARC_GATEWAY="${LA_BIN}/larc-gateway"
+LARC_PROXY="${LA_BIN}/larc-proxy"
 PLUGIN_CACHE="${HOME}/.claude/plugins/cache/light-architects"
-RELEASES_URL="https://github.com/TheLightArchitects/larc-gateway/releases/latest/download"
+RELEASES_URL="https://github.com/TheLightArchitects/larc-proxy/releases/latest/download"
 DRY_RUN=false
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; BOLD='\033[1m'; NC='\033[0m'
@@ -58,14 +58,14 @@ step "Scaffolding ${LA_ROOT}"
 run "mkdir -p \"${LA_BIN}\""
 ok "bin directory ready"
 
-# ─── 2. Download larc-gateway binary ────────────────────────────────────────────────
-step "larc-gateway binary"
+# ─── 2. Download larc-proxy binary ────────────────────────────────────────────────
+step "larc-proxy binary"
 
 PLATFORM="$(detect_platform)"
-BINARY_URL="${RELEASES_URL}/larc-gateway-${PLATFORM}"
+BINARY_URL="${RELEASES_URL}/larc-proxy-${PLATFORM}"
 
-if [ -f "${LARC_GATEWAY}" ] && ! $DRY_RUN; then
-  INSTALLED="$(${LARC_GATEWAY} --version 2>/dev/null || echo 'unknown')"
+if [ -f "${LARC_PROXY}" ] && ! $DRY_RUN; then
+  INSTALLED="$(${LARC_PROXY} --version 2>/dev/null || echo 'unknown')"
   ok "already installed: ${INSTALLED}"
   warn "Re-downloading to ensure latest version..."
 fi
@@ -73,11 +73,11 @@ fi
 ok "Platform: ${PLATFORM}"
 ok "Downloading from: ${BINARY_URL}"
 
-run "curl -fsSL \"${BINARY_URL}\" -o \"${LARC_GATEWAY}\""
-run "chmod +x \"${LARC_GATEWAY}\""
+run "curl -fsSL \"${BINARY_URL}\" -o \"${LARC_PROXY}\""
+run "chmod +x \"${LARC_PROXY}\""
 
-if ! $DRY_RUN && [ -f "${LARC_GATEWAY}" ]; then
-  ok "larc-gateway installed: $(${LARC_GATEWAY} --version 2>/dev/null || echo 'ok')"
+if ! $DRY_RUN && [ -f "${LARC_PROXY}" ]; then
+  ok "larc-proxy installed: $(${LARC_PROXY} --version 2>/dev/null || echo 'ok')"
 fi
 
 # ─── 3. Plugin cache symlink ──────────────────────────────────────────────────
@@ -113,7 +113,7 @@ cat <<SNIPPET
 Add this to ${MCP_CONFIG} under "mcpServers":
 
   "lightarchitects": {
-    "command": "${LARC_GATEWAY}",
+    "command": "${LARC_PROXY}",
     "env": {
       "LIGHTARCHITECTS_API_KEY": "<your-api-key>",
       "LIGHTARCHITECTS_API_URL": "https://api.lightarchitects.ai"
@@ -136,7 +136,7 @@ step "Done"
 if $DRY_RUN; then
   warn "Dry run complete — no files written."
 else
-  ok "larc-gateway binary: ${LARC_GATEWAY}"
+  ok "larc-proxy binary: ${LARC_PROXY}"
   ok "Plugin cache:  ${PLUGIN_CACHE}"
   echo ""
   echo "Next steps:"
