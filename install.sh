@@ -1,18 +1,16 @@
 #!/usr/bin/env bash
-# Light Architects Plugin — First-Run Installer
+# Light Architects Plugin — Installer
 #
-# Scaffolds ~/.lightarchitects/ and wires the lightarchitects plugin into
-# Claude Code. Run once after cloning this repo.
+# Downloads the la-mcp client binary and wires the lightarchitects plugin
+# into Claude Code. Run once after cloning this repo.
 #
 # Usage:
 #   bash install.sh                  # full install
 #   bash install.sh --dry-run        # preview without writing
-#   LA_GATEWAY_BIN=/custom/path bash install.sh  # custom gateway binary path
 #
-# Prerequisites:
-#   - Claude Code installed (claude --version)
-#   - The lightarchitects gateway binary already built and placed at
-#     ~/.lightarchitects/bin/lightarchitects  (or set LA_GATEWAY_BIN)
+# Requires: curl, Claude Code or Claude Desktop, a LIGHTARCHITECTS_API_KEY
+#
+# Get an API key at: https://lightarchitects.ai
 #
 # "Prove all things." — 1 Thessalonians 5:21
 
@@ -20,144 +18,130 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LA_ROOT="${LA_ROOT:-${HOME}/.lightarchitects}"
-LA_HELIX="${LA_HELIX:-${LA_ROOT}/helix}"
-LA_GATEWAY_BIN="${LA_GATEWAY_BIN:-${LA_ROOT}/bin/lightarchitects}"
+LA_BIN="${LA_ROOT}/bin"
+LA_MCP="${LA_BIN}/la-mcp"
 PLUGIN_CACHE="${HOME}/.claude/plugins/cache/light-architects"
+RELEASES_URL="https://github.com/TheLightArchitects/la-mcp/releases/latest/download"
 DRY_RUN=false
 
-# ─── colours ──────────────────────────────────────────────────────────────────
-GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
+GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; BOLD='\033[1m'; NC='\033[0m'
 ok()   { echo -e "${GREEN}✓${NC} $*"; }
 warn() { echo -e "${YELLOW}!${NC} $*"; }
 err()  { echo -e "${RED}✗${NC} $*" >&2; }
-step() { echo -e "\n── $* ──────────────────────────────────"; }
+step() { echo -e "\n${BOLD}── $* ──────────────────────────────────${NC}"; }
 
 for arg in "$@"; do
   case "$arg" in --dry-run) DRY_RUN=true ;; esac
 done
 
-run() {
-  if $DRY_RUN; then echo "  [dry-run] $*"; else eval "$@"; fi
+run() { if $DRY_RUN; then echo "  [dry-run] $*"; else eval "$@"; fi; }
+
+# ─── detect platform ──────────────────────────────────────────────────────────
+detect_platform() {
+  local os arch
+  os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  arch="$(uname -m)"
+  case "$arch" in
+    arm64|aarch64) arch="aarch64" ;;
+    x86_64)        arch="x86_64"  ;;
+    *) err "Unsupported architecture: $arch"; exit 1 ;;
+  esac
+  case "$os" in
+    darwin) echo "${arch}-apple-darwin" ;;
+    linux)  echo "${arch}-unknown-linux-musl" ;;
+    *) err "Unsupported OS: $os"; exit 1 ;;
+  esac
 }
 
-# ─── 1. Directory scaffold ─────────────────────────────────────────────────────
+# ─── 1. Directory scaffold ────────────────────────────────────────────────────
 step "Scaffolding ${LA_ROOT}"
+run "mkdir -p \"${LA_BIN}\""
+ok "bin directory ready"
 
-for dir in \
-  "${LA_ROOT}/bin" \
-  "${LA_HELIX}/user/standards/canon" \
-  "${LA_HELIX}/user/standards/industry-baselines/security" \
-  "${LA_HELIX}/user/standards/industry-baselines/quality" \
-  "${LA_HELIX}/user/standards/industry-baselines/operations" \
-  "${LA_HELIX}/user/standards/industry-baselines/research" \
-  "${LA_HELIX}/user/standards/industry-baselines/documentation" \
-  "${LA_HELIX}/squad/platform/lessons" \
-  "${LA_HELIX}/claude/journal" \
-  "${LA_ROOT}/corso/bin" \
-  "${LA_ROOT}/eva/bin" \
-  "${LA_ROOT}/soul/bin" \
-; do
-  if [ ! -d "$dir" ]; then
-    run "mkdir -p \"$dir\""
-    ok "created $dir"
-  else
-    ok "exists  $dir"
-  fi
-done
+# ─── 2. Download la-mcp binary ────────────────────────────────────────────────
+step "la-mcp binary"
 
-# ─── 2. Plugin cache symlink ───────────────────────────────────────────────────
-step "Plugin cache → ${PLUGIN_CACHE}"
+PLATFORM="$(detect_platform)"
+BINARY_URL="${RELEASES_URL}/la-mcp-${PLATFORM}"
 
-PLUGIN_TARGET="${SCRIPT_DIR}/plugins/lightarchitects"
-
-if [ ! -d "${HOME}/.claude/plugins/cache" ]; then
-  run "mkdir -p \"${HOME}/.claude/plugins/cache\""
+if [ -f "${LA_MCP}" ] && ! $DRY_RUN; then
+  INSTALLED="$(${LA_MCP} --version 2>/dev/null || echo 'unknown')"
+  ok "already installed: ${INSTALLED}"
+  warn "Re-downloading to ensure latest version..."
 fi
 
+ok "Platform: ${PLATFORM}"
+ok "Downloading from: ${BINARY_URL}"
+
+run "curl -fsSL \"${BINARY_URL}\" -o \"${LA_MCP}\""
+run "chmod +x \"${LA_MCP}\""
+
+if ! $DRY_RUN && [ -f "${LA_MCP}" ]; then
+  ok "la-mcp installed: $(${LA_MCP} --version 2>/dev/null || echo 'ok')"
+fi
+
+# ─── 3. Plugin cache symlink ──────────────────────────────────────────────────
+step "Plugin cache"
+
+PLUGIN_TARGET="${SCRIPT_DIR}/plugins/lightarchitects"
+run "mkdir -p \"${HOME}/.claude/plugins/cache\""
+
 if [ -L "${PLUGIN_CACHE}" ]; then
-  current_target="$(readlink "${PLUGIN_CACHE}")"
-  if [ "$current_target" = "$PLUGIN_TARGET" ]; then
-    ok "symlink already correct → ${PLUGIN_TARGET}"
+  existing="$(readlink "${PLUGIN_CACHE}")"
+  if [ "$existing" = "$PLUGIN_TARGET" ]; then
+    ok "symlink correct → ${PLUGIN_TARGET}"
   else
-    warn "symlink points to ${current_target} — updating"
+    warn "updating symlink: ${existing} → ${PLUGIN_TARGET}"
     run "rm \"${PLUGIN_CACHE}\""
     run "ln -s \"${PLUGIN_TARGET}\" \"${PLUGIN_CACHE}\""
-    ok "symlink updated → ${PLUGIN_TARGET}"
+    ok "symlink updated"
   fi
 elif [ -d "${PLUGIN_CACHE}" ]; then
-  warn "${PLUGIN_CACHE} is a real directory — skipping (manual review needed)"
+  warn "${PLUGIN_CACHE} is a real directory — skipping (review manually)"
 else
   run "ln -s \"${PLUGIN_TARGET}\" \"${PLUGIN_CACHE}\""
   ok "symlink created → ${PLUGIN_TARGET}"
 fi
 
-# ─── 3. MCP config snippet ────────────────────────────────────────────────────
-step "MCP server config"
+# ─── 4. MCP config snippet ────────────────────────────────────────────────────
+step "MCP config"
 
 MCP_CONFIG="${HOME}/.claude/mcp.json"
-MCP_SNIPPET=$(cat <<JSON
-{
-  "mcpServers": {
-    "lightarchitects": {
-      "command": "${LA_GATEWAY_BIN}",
-      "env": {
-        "RUST_LOG": "info",
-        "OLLAMA_API_KEY": "\${OLLAMA_API_KEY}",
-        "OLLAMA_TIMEOUT": "15",
-        "OLLAMA_LOCAL_URL": "http://localhost:11434",
-        "PERPLEXITY_API_KEY": "\${PERPLEXITY_API_KEY}",
-        "HF_TOKEN": "\${HF_TOKEN}"
-      }
+
+cat <<SNIPPET
+
+Add this to ${MCP_CONFIG} under "mcpServers":
+
+  "lightarchitects": {
+    "command": "${LA_MCP}",
+    "env": {
+      "LIGHTARCHITECTS_API_KEY": "<your-api-key>",
+      "LIGHTARCHITECTS_API_URL": "https://api.lightarchitects.ai"
     }
   }
-}
-JSON
-)
 
-if [ ! -f "${LA_GATEWAY_BIN}" ] && ! $DRY_RUN; then
-  warn "Gateway binary not found at ${LA_GATEWAY_BIN}"
-  warn "Build it first: see https://github.com/TheLightArchitects/lightarchitects-sdk"
-  warn "Or set LA_GATEWAY_BIN=/path/to/binary before running install.sh"
-else
-  ok "Gateway binary: ${LA_GATEWAY_BIN}"
-fi
+Get an API key at: https://lightarchitects.ai
 
-echo ""
-echo "Add this to ${MCP_CONFIG} under 'mcpServers':"
-echo "──────────────────────────────────────────────"
-echo "$MCP_SNIPPET" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-print(json.dumps(data['mcpServers'], indent=2))
-" 2>/dev/null || echo "$MCP_SNIPPET"
-echo "──────────────────────────────────────────────"
-echo ""
+SNIPPET
 
 if [ -f "${MCP_CONFIG}" ]; then
-  ok "Found existing ${MCP_CONFIG} — merge the snippet above manually"
-  ok "(Auto-merge skipped to avoid corrupting your config)"
+  ok "Found ${MCP_CONFIG} — merge the snippet above manually"
 else
-  warn "No ${MCP_CONFIG} found. Copy the snippet above into that file."
+  warn "${MCP_CONFIG} not found — create it with the snippet above"
 fi
 
-# ─── 4. Verify ────────────────────────────────────────────────────────────────
-step "Verification"
-
-ok "LA_ROOT          = ${LA_ROOT}"
-ok "LA_HELIX         = ${LA_HELIX}"
-ok "LA_GATEWAY_BIN   = ${LA_GATEWAY_BIN}"
-ok "Plugin cache     = ${PLUGIN_CACHE}"
+# ─── 5. Done ──────────────────────────────────────────────────────────────────
+step "Done"
 
 if $DRY_RUN; then
-  echo ""
-  warn "Dry run complete — no files were written."
+  warn "Dry run complete — no files written."
 else
-  echo ""
-  ok "Install complete."
+  ok "la-mcp binary: ${LA_MCP}"
+  ok "Plugin cache:  ${PLUGIN_CACHE}"
   echo ""
   echo "Next steps:"
-  echo "  1. Build the gateway: cd lightarchitects-sdk && make deploy"
-  echo "  2. Add the MCP snippet above to ~/.claude/mcp.json"
-  echo "  3. In Claude Code: /mcp   (to reconnect the MCP server)"
-  echo "  4. Test: invoke /BUILD or ask Claude to use a skill"
+  echo "  1. Add the MCP snippet above to ~/.claude/mcp.json"
+  echo "  2. Set LIGHTARCHITECTS_API_KEY in your environment"
+  echo "  3. In Claude Code: /mcp"
+  echo "  4. Try: /BUILD or /PLAN"
 fi

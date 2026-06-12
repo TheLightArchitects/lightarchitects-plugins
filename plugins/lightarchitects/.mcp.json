@@ -1,17 +1,11 @@
 {
   "mcpServers": {
     "lightarchitects": {
-      "command": "${LA_GATEWAY_BIN:-${HOME}/.lightarchitects/bin/lightarchitects}",
+      "command": "${HOME}/.lightarchitects/bin/la-mcp",
       "env": {
-        "RUST_LOG": "info",
-        "OLLAMA_API_KEY": "${OLLAMA_API_KEY}",
-        "OLLAMA_TIMEOUT": "15",
-        "OLLAMA_LOCAL_URL": "http://localhost:11434",
-        "OLLAMA_CLOUD_MODEL": "gpt-oss:120b-cloud",
-        "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
-        "ELEVENLABS_API_KEY": "${ELEVENLABS_API_KEY}",
-        "SOUL_ALLOW_WRITE": "true",
-        "HF_TOKEN": "${HF_TOKEN}"
+        "LIGHTARCHITECTS_API_KEY": "${LIGHTARCHITECTS_API_KEY}",
+        "LIGHTARCHITECTS_API_URL": "https://api.lightarchitects.ai",
+        "RUST_LOG": "warn"
       }
     }
   }

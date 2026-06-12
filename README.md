@@ -39,9 +39,9 @@ Invoke these directly in Claude Code with `/SKILL_NAME`:
 
 ## Requirements
 
-- [Claude Code](https://claude.ai/code) (CLI or desktop app)
-- The `lightarchitects` gateway binary (see [lightarchitects-sdk](https://github.com/TheLightArchitects/lightarchitects-sdk))
-- macOS or Linux
+- [Claude Code](https://claude.ai/code) or [Claude Desktop](https://claude.ai/download)
+- A Light Architects API key — get one at [lightarchitects.ai](https://lightarchitects.ai)
+- macOS (arm64 or x86_64) or Linux
 
 ## Install
 
@@ -50,39 +50,33 @@ Invoke these directly in Claude Code with `/SKILL_NAME`:
 git clone https://github.com/TheLightArchitects/lightarchitects-plugins.git
 cd lightarchitects-plugins
 
-# 2. Build and install the gateway binary
-#    (or set LA_GATEWAY_BIN to an existing binary)
-git clone https://github.com/TheLightArchitects/lightarchitects-sdk.git
-cd lightarchitects-sdk && make deploy
-cd ..
-
-# 3. Run the installer — scaffolds ~/.lightarchitects/ and prints MCP config
+# 2. Run the installer — downloads la-mcp binary and prints MCP config
 bash install.sh
 
-# 4. Add the printed MCP snippet to ~/.claude/mcp.json
+# 3. Add the printed snippet to ~/.claude/mcp.json (with your API key)
 
-# 5. In Claude Code: /mcp  (reconnect the server)
+# 4. In Claude Code: /mcp
 ```
 
-## MCP config
+That's it. No Rust toolchain, no building from source.
 
-Add this to `~/.claude/mcp.json` (the `install.sh` prints the exact snippet for your machine):
+## MCP config
 
 ```json
 {
   "mcpServers": {
     "lightarchitects": {
-      "command": "${LA_GATEWAY_BIN:-~/.lightarchitects/bin/lightarchitects}",
+      "command": "~/.lightarchitects/bin/la-mcp",
       "env": {
-        "RUST_LOG": "info",
-        "OLLAMA_API_KEY": "${OLLAMA_API_KEY}",
-        "PERPLEXITY_API_KEY": "${PERPLEXITY_API_KEY}",
-        "HF_TOKEN": "${HF_TOKEN}"
+        "LIGHTARCHITECTS_API_KEY": "<your-api-key>",
+        "LIGHTARCHITECTS_API_URL": "https://api.lightarchitects.ai"
       }
     }
   }
 }
 ```
+
+The `la-mcp` binary is a lightweight MCP client built on [`rmcp`](https://github.com/modelcontextprotocol/rust-sdk) that routes tool calls to the Light Architects API. No private platform code is distributed.
 
 ## Directory layout
 
