@@ -21,7 +21,7 @@ LA_ROOT="${LA_ROOT:-${HOME}/.lightarchitects}"
 LA_BIN="${LA_ROOT}/bin"
 LARC_PROXY="${LA_BIN}/larc-proxy"
 PLUGIN_CACHE="${HOME}/.claude/plugins/cache/light-architects"
-RELEASES_URL="https://github.com/TheLightArchitects/larc-proxy/releases/latest/download"
+RELEASES_URL="https://github.com/TheLightArchitects/larc-crates/releases/latest/download"
 DRY_RUN=false
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; BOLD='\033[1m'; NC='\033[0m'
