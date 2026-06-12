@@ -1,0 +1,15 @@
+# Platform helix marker for the lightarchitects canonical bundle.
+# This file marks _platform-bundle/ as a platform-tier helix.
+# scope_tier = "platform" means this helix is READ-ONLY for all users —
+# content here is shipped by the lightarchitects plugin and cannot be
+# modified via write_note or any MCP tool.
+#
+# platform_helix_version supports OD-4 forking: consumers check this
+# version at mount time to verify compatibility before mounting.
+
+[helix]
+name = "platform"
+scope_tier = "platform"
+schema_version = 1
+platform_helix_version = "1.0.0"
+publish = false

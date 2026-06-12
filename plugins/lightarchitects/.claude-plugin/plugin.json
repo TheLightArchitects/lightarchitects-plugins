@@ -1,0 +1,9 @@
+{
+  "name": "lightarchitects",
+  "version": "1.0.0",
+  "description": "Platform orchestrator — routes tasks to the right teammate and coordinates multi-domain workflows",
+  "author": {
+    "name": "Light Architects",
+    "email": "hello@lightarchitects.io"
+  }
+}

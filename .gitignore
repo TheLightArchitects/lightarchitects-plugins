@@ -1,0 +1,6 @@
+*.swp
+*.swo
+.DS_Store
+plugins/lightarchitects/bin/lightarchitects
+plugins/lightarchitects/bin/*.bak
+*.bak
